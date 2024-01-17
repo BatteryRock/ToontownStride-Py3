@@ -1,3 +1,7 @@
+hello github am learning things :3 feel free to tell me things i do not know
+
+thanks to ostoontown for python 3 version of tt stride!!11!!!!1
+
 <img src="https://raw.githubusercontent.com/OSToontown/ToontownStride-Python3/master/resources/phase_3/etc/icon.ico" align="right" width="200"/>
 
 # Toontown Stride
