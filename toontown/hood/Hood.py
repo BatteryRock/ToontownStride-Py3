@@ -1,4 +1,4 @@
-from panda3d.core import *
+from panda3d.core import NodePath, Vec4, CompassEffect, TransparencyAttrib, CompassEffect
 from toontown.toonbase.ToonBaseGlobal import *
 from toontown.toonbase.ToontownGlobals import *
 from toontown.distributed.ToontownMsgTypes import *
@@ -75,17 +75,10 @@ class Hood(StateData.StateData):
         return
 
     def load(self):
-        files = []
+        files = [self.storageDNAFile] + [storageFile for key, value in self.holidayStorageDNADict.items() if base.cr.newsManager.isHolidayRunning(key) for storageFile in value]
 
-        if self.storageDNAFile:
-            files.append(self.storageDNAFile)
-
-        for key, value in self.holidayStorageDNADict.items():
-            if base.cr.newsManager.isHolidayRunning(key):
-                for storageFile in value:
-                    files.append(storageFile)
-
-        if not base.cr.newsManager.isHolidayRunning(ToontownGlobals.HALLOWEEN) or not self.spookySkyFile:
+        halloween_running = base.cr.newsManager.isHolidayRunning(ToontownGlobals.HALLOWEEN)
+        if not halloween_running or not self.spookySkyFile:
             self.sky = loader.loadModel(self.skyFile)
             self.sky.setTag('sky', 'Regular')
             self.sky.setScale(1.0)
@@ -98,7 +91,8 @@ class Hood(StateData.StateData):
         dnaBulk.loadDNAFiles()
 
     def unload(self):
-        if hasattr(self, 'loader'):
+        loader_exists = hasattr(self, 'loader')
+        if loader_exists:
             self.notify.info('Aggressively cleaning up loader: %s' % self.loader)
             self.loader.exit()
             self.loader.unload()
