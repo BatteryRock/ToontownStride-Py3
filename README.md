@@ -1,3 +1,7 @@
+this branch has a lot of code that i ain't sure would work or not so yeah its here
+feel free to test this out and note of anything wrong!!
+
+
 <img src="https://raw.githubusercontent.com/OSToontown/ToontownStride-Python3/master/resources/phase_3/etc/icon.ico" align="right" width="200"/>
 
 # Toontown Stride
