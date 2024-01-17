@@ -7,52 +7,33 @@ from toontown.suit import DistributedSellbotBossAI
 from toontown.suit import DistributedSuitPlannerAI
 from toontown.toonbase import ToontownGlobals
 
-
 class SellbotHQAI(CogHQAI.CogHQAI):
     def __init__(self, air):
-        CogHQAI.CogHQAI.__init__(
-            self, air, ToontownGlobals.SellbotHQ, ToontownGlobals.SellbotLobby,
-            FADoorCodes.SB_DISGUISE_INCOMPLETE,
-            DistributedVPElevatorAI.DistributedVPElevatorAI,
-            DistributedSellbotBossAI.DistributedSellbotBossAI)
-
+        super().__init__(air, ToontownGlobals.SellbotHQ, ToontownGlobals.SellbotLobby, FADoorCodes.SB_DISGUISE_INCOMPLETE,
+                         DistributedVPElevatorAI.DistributedVPElevatorAI, DistributedSellbotBossAI.DistributedSellbotBossAI)
         self.factoryElevators = []
         self.factoryBoardingParty = None
         self.suitPlanners = []
-
         self.startup()
 
     def startup(self):
-        CogHQAI.CogHQAI.startup(self)
-
-        # Sellbot HQ has not just one, but four lobby doors:
-        self.cogHQDoors = [self.extDoor]
-        for i in range(3):  # CogHQAI already created one of the doors for us.
-            extDoor = self.makeCogHQDoor(self.lobbyZoneId, 0, i + 1, self.lobbyFADoorCode)
-            self.cogHQDoors.append(extDoor)
+        super().startup()
+        self.cogHQDoors = [self.extDoor] + [self.makeCogHQDoor(self.lobbyZoneId, 0, i + 1, self.lobbyFADoorCode) for i in range(3)]
         self.createFactoryElevators()
         if simbase.config.GetBool('want-boarding-groups', True):
             self.createFactoryBoardingParty()
         if simbase.config.GetBool('want-suit-planners', True):
             self.createSuitPlanners()
-
-        # Our suit planner needs the Cog HQ doors as well:
         for sp in self.suitPlanners:
             if sp.zoneId == self.zoneId:
                 sp.cogHQDoors = self.cogHQDoors
 
     def createFactoryElevators(self):
-        # We only have two factory elevators: the front, and side elevators.
-        for i in range(2):
-            factoryElevator = DistributedFactoryElevatorExtAI(
-                self.air, self.air.factoryMgr, ToontownGlobals.SellbotFactoryInt, i)
-            factoryElevator.generateWithRequired(ToontownGlobals.SellbotFactoryExt)
-            self.factoryElevators.append(factoryElevator)
-
+        self.factoryElevators = [DistributedFactoryElevatorExtAI(self.air, self.air.factoryMgr, ToontownGlobals.SellbotFactoryInt, i)
+                                 .generateWithRequired(ToontownGlobals.SellbotFactoryExt) for i in range(2)]
         fatalElevator = DistributedFactoryElevatorExtAI(self.air, self.air.factoryMgr, ToontownGlobals.SellbotFatalInt, 2)
         fatalElevator.generateWithRequired(ToontownGlobals.SellbotFactoryExt)
         self.factoryElevators.append(fatalElevator)
-
 
     def createFactoryBoardingParty(self):
         factoryIdList = [elevator.doId for elevator in self.factoryElevators]
@@ -60,16 +41,12 @@ class SellbotHQAI(CogHQAI.CogHQAI):
         self.factoryBoardingParty.generateWithRequired(ToontownGlobals.SellbotFactoryExt)
 
     def createSuitPlanners(self):
-        suitPlanner = DistributedSuitPlannerAI.DistributedSuitPlannerAI(self.air, self.zoneId)
-        suitPlanner.generateWithRequired(self.zoneId)
-        suitPlanner.d_setZoneId(self.zoneId)
-        suitPlanner.initTasks()
-        self.suitPlanners.append(suitPlanner)
-        self.air.suitPlanners[self.zoneId] = suitPlanner
+        self.suitPlanners = [DistributedSuitPlannerAI.DistributedSuitPlannerAI(self.air, self.zoneId)
+                             .generateWithRequired(self.zoneId).d_setZoneId(self.zoneId).initTasks()]
+        self.air.suitPlanners[self.zoneId] = self.suitPlanners[0]
 
         suitPlanner = DistributedSuitPlannerAI.DistributedSuitPlannerAI(self.air, ToontownGlobals.SellbotFactoryExt)
-        suitPlanner.generateWithRequired(ToontownGlobals.SellbotFactoryExt)
-        suitPlanner.d_setZoneId(ToontownGlobals.SellbotFactoryExt)
-        suitPlanner.initTasks()
+        suitPlanner.generateWithRequired(ToontownGlobals.SellbotFactoryExt).d_setZoneId(ToontownGlobals.SellbotFactoryExt).initTasks()
         self.suitPlanners.append(suitPlanner)
         self.air.suitPlanners[ToontownGlobals.SellbotFactoryExt] = suitPlanner
+

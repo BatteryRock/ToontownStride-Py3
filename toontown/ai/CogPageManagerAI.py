@@ -29,14 +29,17 @@ class CogPageManagerAI:
                 if cogCounts[cogIndex] >= buildingQuota:
                     return
                 cogCounts[cogIndex] += 1
-                if cogCounts[cogIndex] < cogQuota:
-                    cogs[cogIndex] = COG_DEFEATED
-                elif cogQuota <= cogCounts[cogIndex] < buildingQuota:
+                if cogQuota <= cogCounts[cogIndex] < buildingQuota:
                     cogs[cogIndex] = COG_COMPLETE1
                 else:
                     cogs[cogIndex] = COG_COMPLETE2
         toon.b_setCogCount(cogCounts)
         toon.b_setCogStatus(cogs)
+        newCogRadar, newBuildingRadar = self._updateRadar(toon)
+        toon.b_setCogRadar(newCogRadar)
+        toon.b_setBuildingRadar(newBuildingRadar)
+
+    def _updateRadar(self, toon):
         newCogRadar = toon.cogRadar
         newBuildingRadar = toon.buildingRadar
         for dept in range(len(SuitDNA.suitDepts)):
@@ -45,12 +48,11 @@ class CogPageManagerAI:
             cogRadar = 1
             buildingRadar = 1
             for cog in range(SuitDNA.suitsPerDept):
-                status =  toon.cogs[dept*SuitDNA.suitsPerDept + cog]
+                status = toon.cogs[dept * SuitDNA.suitsPerDept + cog]
                 if status != COG_COMPLETE2:
                     buildingRadar = 0
                 if status != COG_COMPLETE1 or status != COG_COMPLETE2:
                     cogRadar = 0
             newCogRadar[dept] = cogRadar
             newBuildingRadar[dept] = buildingRadar
-        toon.b_setCogRadar(newCogRadar)
-        toon.b_setBuildingRadar(newBuildingRadar)
+        return newCogRadar, newBuildingRadar

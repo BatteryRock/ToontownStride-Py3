@@ -695,17 +695,15 @@ class ToontownClientRepository(OTPClientRepository.OTPClientRepository):
                 callback()
             return
 
-        def petDetailsCallback(petAvatar):
-            petAvatar.announceGenerate()
-            handle = PetHandle.PetHandle(petAvatar)
-            self.friendsMap[doId] = handle
-            petAvatar.disable()
-            petAvatar.delete()
-            if callback:
-                callback()
-            petAvatar.detectLeaks()
-
-        PetDetail.PetDetail(doId, petDetailsCallback)
+    def petDetailsCallback(petAvatar):
+        petAvatar.announceGenerate()
+        handle = PetHandle.PetHandle(petAvatar)
+        self.friendsMap[doId] = handle
+        petAvatar.disable()
+        petAvatar.delete()
+        if callback:
+            callback()
+        petAvatar.detectLeaks()
 
     def handleGetFriendsList(self, resp):
         for toon in resp:
@@ -720,17 +718,7 @@ class ToontownClientRepository(OTPClientRepository.OTPClientRepository):
             self.friendsMap[doId] = handle
             if doId in self.friendsOnline:
                 self.friendsOnline[doId] = handle
-
-        if base.wantPets and base.localAvatar.hasPet():
-
-            def handleAddedPet():
-                self.friendsMapPending = 0
-                messenger.send('friendsMapComplete')
-
-            self.addPetToFriendsMap(handleAddedPet)
-            return
-        self.friendsMapPending = 0
-        messenger.send('friendsMapComplete')
+        
 
     def handleFriendOnline(self, doId):
         self.notify.debug('Friend %d now online.' % doId)

@@ -5,6 +5,7 @@ from toontown.toonbase import TTLocalizer, ToontownGlobals
 import random
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
+from toontown.coghq import CogDisguiseGlobals
 notify = directNotify.newCategory('SuitDNA')
 suitHeadTypes = ['f',
  'p',
@@ -177,26 +178,36 @@ def getSuitsInDept(dept):
 
 class SuitDNA:
 
-    def __init__(self, str = None, type = None, dna = None, r = None, b = None, g = None):
-        if str != None:
+    def __init__(self, str=None, type=None, dna=None, r=None, b=None, g=None):
+        if str is not None:
             self.makeFromNetString(str)
-        elif type != None:
+        elif type is not None:
             if type == 's':
                 self.newSuit()
         else:
             self.type = 'u'
+            self.partsPerSuit = CogDisguiseGlobals.PartsPerSuit  # Add partsPerSuit attribute
+            self.merits = [0, 0, 0, 0]  # Add merits attribute
         return
 
     def __str__(self):
         if self.type == 's':
-            return 'type = %s\nbody = %s, dept = %s, name = %s' % ('suit',
-             self.body,
-             self.dept,
-             self.name)
+            return 'type = %s\nbody = %s, dept = %s, name = %s, merits = %s' % ('suit',
+                                                                                 self.body,
+                                                                                 self.dept,
+                                                                                 self.name,
+                                                                                 self.merits)
         elif self.type == 'b':
             return 'type = boss cog\ndept = %s' % self.dept
         else:
             return 'type undefined'
+
+
+    def getTotalMerits(self, dept):
+        return sum(self.merits)
+        
+    def getTotalParts(self, dept):
+        return sum(self.partsPerSuit)
 
     def makeNetString(self):
         dg = PyDatagram()

@@ -3,7 +3,6 @@ from direct.interval.IntervalGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from toontown.hood import Place
 from direct.fsm import ClassicFSM, State
-from direct.fsm import State
 from otp.distributed.TelemetryLimiter import RotationLimitToH, TLGatherAllAvs
 from toontown.toonbase import ToontownGlobals
 from toontown.toonbase import ToontownBattleGlobals
@@ -17,83 +16,37 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
     notify = DirectNotifyGlobal.directNotify.newCategory('CogHQBossBattle')
 
     def __init__(self, loader, parentFSM, doneEvent):
-        BattlePlace.BattlePlace.__init__(self, loader, doneEvent)
+        super().__init__(loader, doneEvent)
         self.parentFSM = parentFSM
         self.bossCog = None
         self.teleportInPosHpr = (0, 0, 0, 0, 0, 0)
-        self.fsm = ClassicFSM.ClassicFSM('CogHQBossBattle', [State.State('start', self.enterStart, self.exitStart, ['walk',
-          'tunnelIn',
-          'teleportIn',
-          'movie']),
-         State.State('battle', self.enterBattle, self.exitBattle, ['walk', 'died', 'movie']),
-         State.State('finalBattle', self.enterFinalBattle, self.exitFinalBattle, ['walk',
-          'stickerBook',
-          'teleportOut',
-          'died',
-          'tunnelOut',
-          'battle',
-          'movie',
-          'ouch',
-          'crane',
-          'WaitForBattle',
-          'squished']),
-         State.State('movie', self.enterMovie, self.exitMovie, ['walk',
-          'battle',
-          'finalBattle',
-          'died',
-          'teleportOut']),
-         State.State('ouch', self.enterOuch, self.exitOuch, ['walk',
-          'battle',
-          'finalBattle',
-          'died',
-          'crane']),
-         State.State('crane', self.enterCrane, self.exitCrane, ['walk',
-          'battle',
-          'finalBattle',
-          'died',
-          'ouch',
-          'squished']),
-         State.State('walk', self.enterWalk, self.exitWalk, ['stickerBook',
-          'teleportOut',
-          'died',
-          'tunnelOut',
-          'battle',
-          'movie',
-          'ouch',
-          'crane',
-          'finalBattle',
-          'WaitForBattle']),
-         State.State('stickerBook', self.enterStickerBook, self.exitStickerBook, ['walk',
-          'WaitForBattle',
-          'movie',
-          'battle',
-          'tunnelOut',
-          'teleportOut']),
-         State.State('WaitForBattle', self.enterWaitForBattle, self.exitWaitForBattle, ['battle', 'walk', 'movie']),
-         State.State('teleportIn', self.enterTeleportIn, self.exitTeleportIn, ['walk']),
-         State.State('teleportOut', self.enterTeleportOut, self.exitTeleportOut, ['teleportIn', 'final', 'WaitForBattle']),
-         State.State('died', self.enterDied, self.exitDied, ['final']),
-         State.State('tunnelIn', self.enterTunnelIn, self.exitTunnelIn, ['walk']),
-         State.State('tunnelOut', self.enterTunnelOut, self.exitTunnelOut, ['final']),
-         State.State('squished', self.enterSquished, self.exitSquished, ['finalBattle',
-          'crane',
-          'died',
-          'teleportOut']),
-         State.State('final', self.enterFinal, self.exitFinal, ['start'])], 'start', 'final')
-        return
+        self.fsm = ClassicFSM.ClassicFSM('CogHQBossBattle', [State.State('start', self.enterStart, self.exitStart, ['walk', 'tunnelIn', 'teleportIn', 'movie']),
+                                                            State.State('battle', self.enterBattle, self.exitBattle, ['walk', 'died', 'movie']),
+                                                            State.State('finalBattle', self.enterFinalBattle, self.exitFinalBattle, ['walk', 'stickerBook', 'teleportOut', 'died', 'tunnelOut', 'battle', 'movie', 'ouch', 'crane', 'WaitForBattle', 'squished']),
+                                                            State.State('movie', self.enterMovie, self.exitMovie, ['walk', 'battle', 'finalBattle', 'died', 'teleportOut']),
+                                                            State.State('ouch', self.enterOuch, self.exitOuch, ['walk', 'battle', 'finalBattle', 'died', 'crane']),
+                                                            State.State('crane', self.enterCrane, self.exitCrane, ['walk', 'battle', 'finalBattle', 'died', 'ouch', 'squished']),
+                                                            State.State('walk', self.enterWalk, self.exitWalk, ['stickerBook', 'teleportOut', 'died', 'tunnelOut', 'battle', 'movie', 'ouch', 'crane', 'finalBattle', 'WaitForBattle']),
+                                                            State.State('stickerBook', self.enterStickerBook, self.exitStickerBook, ['walk', 'WaitForBattle', 'movie', 'battle', 'tunnelOut', 'teleportOut']),
+                                                            State.State('WaitForBattle', self.enterWaitForBattle, self.exitWaitForBattle, ['battle', 'walk', 'movie']),
+                                                            State.State('teleportIn', self.enterTeleportIn, self.exitTeleportIn, ['walk']),
+                                                            State.State('teleportOut', self.enterTeleportOut, self.exitTeleportOut, ['teleportIn', 'final', 'WaitForBattle']),
+                                                            State.State('died', self.enterDied, self.exitDied, ['final']),
+                                                            State.State('tunnelIn', self.enterTunnelIn, self.exitTunnelIn, ['walk']),
+                                                            State.State('tunnelOut', self.enterTunnelOut, self.exitTunnelOut, ['final']),
+                                                            State.State('squished', self.enterSquished, self.exitSquished, ['finalBattle', 'crane', 'died', 'teleportOut']),
+                                                            State.State('final', self.enterFinal, self.exitFinal, ['start'])], 'start', 'final')
 
     def load(self):
-        BattlePlace.BattlePlace.load(self)
+        super().load()
         self.parentFSM.getStateNamed('cogHQBossBattle').addChild(self.fsm)
         self.townBattle = self.loader.townBattle
         for i in range(1, 3):
             Suit.loadSuits(i)
 
     def unload(self):
-        BattlePlace.BattlePlace.unload(self)
+        super().unload()
         self.parentFSM.getStateNamed('cogHQBossBattle').removeChild(self.fsm)
-        del self.parentFSM
-        del self.fsm
         self.ignoreAll()
         for i in range(1, 3):
             Suit.unloadSuits(i)
@@ -103,7 +56,7 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
 
     def enter(self, requestStatus, bossCog):
         self.zoneId = requestStatus['zoneId']
-        BattlePlace.BattlePlace.enter(self)
+        super().enter()
         self.fsm.enterInitialState()
         self.bossCog = bossCog
         if self.bossCog:
@@ -120,9 +73,7 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
             self.bossCog.d_avatarExit()
         self.bossCog = None
         self._telemLimiter.destroy()
-        del self._telemLimiter
         BattlePlace.BattlePlace.exit(self)
-        return
 
     def enterBattle(self, event):
         mult = 1
@@ -151,7 +102,7 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
         self.walkStateData.exit()
         base.localAvatar.setTeleportAllowed(1)
 
-    def enterMovie(self, requestStatus = None):
+    def enterMovie(self, requestStatus=None):
         base.localAvatar.setTeleportAvailable(0)
 
     def exitMovie(self):
@@ -173,8 +124,8 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
         base.localAvatar.collisionsOff()
         base.localAvatar.laffMeter.stop()
 
-    def enterWalk(self, teleportIn = 0):
-        BattlePlace.BattlePlace.enterWalk(self, teleportIn)
+    def enterWalk(self, teleportIn=0):
+        super().enterWalk(teleportIn)
         self.ignore('teleportQuery')
         base.localAvatar.setTeleportAvailable(0)
         base.localAvatar.setTeleportAllowed(0)
@@ -185,26 +136,26 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
         self.ignore(self.walkDoneEvent)
 
     def exitWalk(self):
-        BattlePlace.BattlePlace.exitWalk(self)
+        super().exitWalk()
         base.localAvatar.setTeleportAllowed(1)
 
-    def enterStickerBook(self, page = None):
-        BattlePlace.BattlePlace.enterStickerBook(self, page)
+    def enterStickerBook(self, page=None):
+        super().enterStickerBook(page)
         self.ignore('teleportQuery')
         base.localAvatar.setTeleportAvailable(0)
 
     def enterSit(self):
-        BattlePlace.BattlePlace.enterSit(self)
+        super().enterSit()
         self.ignore('teleportQuery')
         base.localAvatar.setTeleportAvailable(0)
 
     def enterTeleportIn(self, requestStatus):
         base.localAvatar.detachNode()
         base.localAvatar.setPosHpr(*self.teleportInPosHpr)
-        BattlePlace.BattlePlace.enterTeleportIn(self, requestStatus)
+        super().enterTeleportIn(requestStatus)
 
     def enterTeleportOut(self, requestStatus):
-        BattlePlace.BattlePlace.enterTeleportOut(self, requestStatus, self.__teleportOutDone)
+        super().enterTeleportOut(requestStatus, self.__teleportOutDone)
 
     def __teleportOutDone(self, requestStatus):
         hoodId = requestStatus['hoodId']
@@ -218,7 +169,7 @@ class CogHQBossBattle(BattlePlace.BattlePlace):
         base.localAvatar.laffMeter.start()
         base.localAvatar.b_setAnimState('Flattened')
 
-    def handleSquishDone(self, extraArgs = []):
+    def handleSquishDone(self, extraArgs=[]):
         base.cr.playGame.getPlace().setState('walk')
 
     def exitSquished(self):

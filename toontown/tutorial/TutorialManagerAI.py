@@ -1,4 +1,4 @@
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectAI import DistributedObjectAI
 from direct.fsm.FSM import FSM
 from toontown.building import FADoorCodes
@@ -10,8 +10,9 @@ from toontown.toon import NPCToons
 from toontown.toonbase import ToontownBattleGlobals
 from toontown.toonbase import ToontownGlobals
 
-
 class TutorialFSM(FSM):
+    notify = directNotify.newCategory('TutorialFSM')
+
     def __init__(self, air, zones, avId):
         FSM.__init__(self, 'TutorialFSM')
 
@@ -49,7 +50,7 @@ class TutorialFSM(FSM):
         self.hq.door1.setDoorLock(FADoorCodes.DEFEAT_FLUNKY_HQ)
 
     def exitBattle(self):
-        if self.suit:
+        if hasattr(self, 'suit') and self.suit:
             self.suit.requestDelete()
 
     def enterHQ(self):
@@ -69,13 +70,16 @@ class TutorialFSM(FSM):
         self.building.door.setDoorLock(FADoorCodes.GO_TO_PLAYGROUND)
 
     def exitTunnel(self):
-        self.flippy.requestDelete()
+        if hasattr(self, 'flippy') and self.flippy:
+            self.flippy.requestDelete()
 
     def enterCleanup(self):
         self.building.cleanup()
         self.hq.cleanup()
-        self.tutorialTom.requestDelete()
-        self.hqHarry.requestDelete()
+        if hasattr(self, 'tutorialTom') and self.tutorialTom:
+            self.tutorialTom.requestDelete()
+        if hasattr(self, 'hqHarry') and self.hqHarry:
+            self.hqHarry.requestDelete()
 
         self.air.deallocateZone(self.zones['street'])
         self.air.deallocateZone(self.zones['building'])
@@ -112,13 +116,11 @@ class TutorialManagerAI(DistributedObjectAI):
         avId = self.air.getAvatarIdFromSender()
         self.d_skipTutorialResponse(avId, 1)
 
-
         def handleTutorialSkipped(av):
             av.b_setTutorialAck(1)
             av.b_setQuests([[110, 1, 1000, 100, 1]])
             av.b_setQuestHistory([101])
             av.b_setRewardHistory(1, [])
-
 
         # We must wait for the avatar to be generated:
         self.acceptOnce('generate-%d' % avId, handleTutorialSkipped)
@@ -148,7 +150,9 @@ class TutorialManagerAI(DistributedObjectAI):
             return
 
         if av.getTutorialAck():
-            self.avId2fsm[avId].demand('Cleanup')
+            fsm = self.avId2fsm.get(avId)
+            if fsm is not None:
+                fsm.demand('Cleanup')
             self.air.writeServerEvent('suspicious', avId, issue='Attempted to enter a tutorial when it should be impossible.')
             return
 

@@ -15,6 +15,11 @@ class DNABulkLoader:
         del self.dnaFiles
 
 def loadDNABulk(dnaStorage, file):
+    print('Loading DNA bulk:', file)
+    if file is None:
+        print('Error: File is None')
+        return
+
     dnaLoader = DNALoader()
     file = '/' + file
     dnaLoader.loadDNAFile(dnaStorage, file)
